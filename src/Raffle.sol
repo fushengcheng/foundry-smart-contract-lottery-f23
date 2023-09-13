@@ -64,12 +64,13 @@ contract Raffle is VRFConsumerBaseV2 {
     /** Events */
     event EnteredRaffle(address indexed player);
     event PickedWinner(address indexed winner);
+    event RequestRaffleWinner(uint256 indexed requestId);
 
     /** Errors */
     error Raffle__NotEnoughEthSent();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
-    error Raffle__UpKeeperNotNeeded(
+    error Raffle__UpKeepNotNeeded(
         uint256 currentBalance,
         uint256 numPlayers,
         uint256 raffleState
@@ -133,7 +134,7 @@ contract Raffle is VRFConsumerBaseV2 {
         //Checks
         (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
-            revert Raffle__UpKeeperNotNeeded(
+            revert Raffle__UpKeepNotNeeded(
                 address(this).balance,
                 s_players.length,
                 uint256(s_raffleState)
@@ -142,13 +143,14 @@ contract Raffle is VRFConsumerBaseV2 {
         //Effects
         s_raffleState = RaffleState.CALCULATING;
         //Interactions
-        /*uint256 requestId = */ i_vrfCoordinator.requestRandomWords(
+        uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane,
             i_subscriptionId,
             REQUEST_CONFIRMATIONS,
             i_callbackGasLimit,
             NUM_WORDS
         );
+        emit RequestRaffleWinner(requestId);
     }
 
     /// @dev 在VRFConsumerBaseV2合约中，实现了rawFulfillRandomWords，chianlink返回结果时会调用这个函数，
