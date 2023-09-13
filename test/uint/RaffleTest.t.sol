@@ -220,7 +220,7 @@ contract RaffleTest is Test {
         public
         raffleEnteredAndTimePassed
     {
-        address expectedWinner = address(1);
+        address expectedWinner = address(1); // 使用的Mock合约中，生成随机数的规则可知，所以可以确定winner为address(1)
 
         // Arrange
         uint256 additionalEntrances = 3;
@@ -245,7 +245,7 @@ contract RaffleTest is Test {
         Vm.Log[] memory entries = vm.getRecordedLogs();
         bytes32 requestId = entries[1].topics[1]; // get the requestId from the logs
         // pretend to ba chainlink vrf to get random number & pick winner
-        VRFCoordinatorV2Mock(vrfCoordinatorV2).fulfillRandomWords(
+        VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords(
             uint256(requestId),
             address(raffle)
         );
