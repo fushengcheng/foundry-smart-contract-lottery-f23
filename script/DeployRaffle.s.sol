@@ -16,14 +16,16 @@ contract DeployRaffle is Script {
             bytes32 gasLane,
             uint64 subscriptionId,
             uint32 callbackGasLimit,
-            address link
+            address link,
+            uint256 deployerKey
         ) = helperConfig.activeNetworkConfig();
 
         if (subscriptionId == 0) {
             //creat subscription
             CreateSubscription createSubscription = new CreateSubscription();
             subscriptionId = createSubscription.createSubscription(
-                vrfCoordinator
+                vrfCoordinator,
+                deployerKey
             );
             /// 这里其实调用createSubscription.run()也可以，
             /// 但是因为上面已经有了helperConfig，调用run()函数会再重复一遍，
@@ -35,7 +37,8 @@ contract DeployRaffle is Script {
             fundsubscription.fundSubscription(
                 vrfCoordinator,
                 subscriptionId,
-                link
+                link,
+                deployerKey
             );
         }
 
@@ -55,7 +58,8 @@ contract DeployRaffle is Script {
         addConsumer.addConsumer(
             address(raffle),
             vrfCoordinator,
-            subscriptionId
+            subscriptionId,
+            deployerKey
         );
 
         return (raffle, helperConfig);

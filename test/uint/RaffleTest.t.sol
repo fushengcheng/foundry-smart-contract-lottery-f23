@@ -19,7 +19,8 @@ contract RaffleTest is Test {
     bytes32 gasLane;
     uint64 subscriptionId;
     uint32 callbackGasLimit;
-    address link;
+    //address link;
+    uint256 deployerKey;
 
     address public PLAYER = makeAddr("player"); //因为constant修饰编译时常量，而PLAYER是运行时常量（编译时才会通过makeAddr赋值），所以不能加上constant。
     uint256 public constant STARTING_USER_BALANCE = 10 ether;
@@ -35,8 +36,9 @@ contract RaffleTest is Test {
             vrfCoordinator,
             gasLane,
             subscriptionId,
-            callbackGasLimit,
-            link
+            callbackGasLimit, //此处变量过多会导致“Stack Too Deep”报错，因此去除不用的变量。
+            ,
+            deployerKey
         ) = helperConfig.activeNetworkConfig();
         vm.deal(PLAYER, STARTING_USER_BALANCE);
     }
@@ -202,10 +204,16 @@ contract RaffleTest is Test {
     /////////////////////////
     // fulfillRandomWords  //
     /////////////////////////
+    modifier skipFork() {
+        if (block.chainid != 31337) {
+            return;
+        }
+        _;
+    }
 
     function testFulfillRandomWordsCanOnlyBeCalledAfterPerformUpkeep(
         uint256 randomRequestId
-    ) public raffleEnteredAndTimePassed {
+    ) public raffleEnteredAndTimePassed skipFork {
         // Arrange
         // Act / Assert
         vm.expectRevert("nonexistent request");
@@ -219,6 +227,7 @@ contract RaffleTest is Test {
     function testFulfillRandomWordsPicksAWinnerResetsAndSendsMoney()
         public
         raffleEnteredAndTimePassed
+        skipFork
     {
         address expectedWinner = address(1); // 使用的Mock合约中，生成随机数的规则可知，所以可以确定winner为address(1)
 
